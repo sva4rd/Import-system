@@ -47,8 +47,8 @@ public class DataImportService {
     }
 
 
-    //@Scheduled(cron = "0 15 0/2 * * ?")
-    @Scheduled(cron = "*/30 * * * * ?")
+    @Scheduled(cron = "0 15 0/2 * * ?")
+    //@Scheduled(cron = "*/30 * * * * ?")
     public void importData() {
         List<ClientResponse> clients = oldSystemClientService.getAllClients();
         List<PatientProfile> patients = patientProfileRepository.findByStatusIdIn(Arrays.asList(200, 210, 230));

@@ -36,6 +36,6 @@ public class PatientNote {
     @JoinColumn(name = "patient_id", nullable = false)
     private PatientProfile patient;
 
-    @Column(name = "old_guid")
+    @Column(name = "old_guid", nullable = false)
     private String oldGuid;
 }
