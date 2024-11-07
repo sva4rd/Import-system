@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  mysql-old-system:
+    image: mysql:8.0
+    container_name: mysql-old-system
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: old_system_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-old-data:/var/lib/mysql
+      - ./Old System/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mysql-new-system:
+    image: mysql:8.0
+    container_name: mysql-new-system
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: new_system_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-new-data:/var/lib/mysql
+      - ./New System/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  spring-boot-old-system:
+    container_name: spring-boot-old-system
+    build:
+      context: ./Old System
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-old-system:3306/old_system_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql-old-system:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  spring-boot-new-system:
+    container_name: spring-boot-new-system
+    build:
+      context: ./New System
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-new-system:3306/new_system_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql-new-system:
+        condition: service_healthy
+    networks:
+      - app-network
+
+volumes:
+  mysql-old-data:
+  mysql-new-data:
+
+networks:
+  app-network:
+    driver: bridge
